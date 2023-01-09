@@ -96,7 +96,7 @@ The test set consisted of 16 images of paper sheets with text - total of 162 cha
 Most of them were written with pen, a few of them - with marker.  
 The network achieved peak accuracy of 97% after training for 15 epochs on extended train set (with augmentation).  
 While additional validation set must be used to fine-tune the network, due do time pressures only test set was used. Because of that, no other fine-tuning methods were attempted - no tuning of learning rates, batch sizes and even model architecture was performed.
-A more broad and diverse test set needs to be gathered, needs to be split into validation and test, fine-tuning should be performed and then more making definitive statements about accuracy can be made.
+A more broad and diverse test set needs to be gathered, needs to be split into validation and test, fine-tuning should be performed and then more definitive statements about accuracy can be made.
 Trained model is available as 'model_best_100_60.h5'.
 
 ## Future work and improvements
