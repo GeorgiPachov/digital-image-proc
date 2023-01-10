@@ -14,7 +14,7 @@ The aim of the project is to demonstrate an application with OCR capabilities. M
 
 ## Task definition
 The goal of the project is to implement a practical computer vision application, which is able to process photos of text and recognize the characters. 
-![Alt text](readme_goal.png "Goal")
+![Alt text](readme/readme_goal.png "Goal")
 
 ## Photo processing pipeline
 In order to achieve that, a robust photo processing pipeline is needed. The pipeline itself needs to be relatively robust towards:
@@ -29,7 +29,7 @@ In a real-world production-grade OCR system, additional requirements are also pr
 These will not be a focus of the current version of the project, but might be improved upon in the future.  
 
   
-![Alt text](readme_pipeline.png "Pipeline")
+![Alt text](readme/readme_pipeline.png "Pipeline")
 
 The pipeline has 9 distinct stages:
 1. Read image and convert to grayscale
@@ -37,17 +37,17 @@ The pipeline has 9 distinct stages:
 3. Since outputs of the laplacian filter performed on images of a white sheet of paper are predictable and robust, they are sutiable as input to a binarizing algorithm. Several different adaptive binarizers were attempted during project development (including [Otsu's](https://en.wikipedia.org/wiki/Otsu%27s_method) binarization method, custom adaptive-binarization, etc). Results tended to be unstable - a perfectly normal image would have parts of it improperly binarized because of simple light and shade shifts. Using binarization after performing laplacian filter proved a lot more robust to different lightings and focus conditions.
 4. After binarization, due to pen handwriting not being perfectly continuous, small "gaps" in letter definitions appear - this is because the edge detection algorithm does not highlight edges where handwriting is "bleak" (pen ink is more transparent). To deal with that, adaptive thickening algorithm was implemented. On the binarized image, bounded dilatation is applied - between 1 and 3 iterations. Number of found connected components is counted. The correct number of dilatation iterations is the one that minimizes the number of found components, and is between 1 and 3. The reasoning behind the algorithm is as follows - at least 1 dilatation needs to be performed because of gaps in the edges found by the laplacian. If by performing dilatations, number of found components decrease, that means dilatation is "connecting" components. A certain amount of "connections" is beneficial, since of expected gaps. However this needs to be bounded, as it can connect two characters together. Heuristically 1 to 3 px of dilatation has proved to be effective.
 Example 1 of steps 1-4:
-![Alt text](readme_pipeline2.png "Pipeline")
+![Alt text](readme/readme_pipeline2.png "Pipeline")
 Example 2:
-![Alt text](readme_pipeline3.png "Pipeline")
+![Alt text](readme/readme_pipeline3.png "Pipeline")
 5. After proper amount of "thickening" has been chosen, the next step is to locate the connected components (letters). OpenCV's [connectedComponents](https://docs.opencv.org/3.4/d3/dc0/group__imgproc__shape.html) proved an excellent fit for job, able to return boundaries, areas and exact pixels belonging to each connected component (letter).
 6. The area for each component returned is especially important, since we are able to perform noise suppression checks based on it. While in real-world application noise suppression parameters might need to be adaptive based on the photo, a simple pixel based constant proved to work good on all test samples.
-![Alt text](readme_pipeline4.png "Pipeline")
+![Alt text](readme/readme_pipeline4.png "Pipeline")
 7. Bounding boxes of components are extracted, cropped and saved in memory. These are the letters that will be analysed. Their positions on the photo will be used to form lines and words.
 8. Lines forming. A recursive "elimination" algorithm is performed - letter bounding boxes are sorted by their y component in ascneding order, and the one closest to the top of the image is chosen. A virtual horizontal line is then created through the center of it - every letter that this line crosses is considered part of the same row. All letters on the same row (including the source one) are removed from the set and procedure is repeated until no letter is left. While being simple and fast to implement, the algorithm has a drawback that if curved handwriting is used, it won't be detected as a single row. In future works, arcs instead of lines can be used to trace curved handwriting.
- ![Alt text](readme_pipeline5.png "Pipeline")
+ ![Alt text](readme/readme_pipeline5.png "Pipeline")
 9. Words forming. A simple statistics-based algorithm is performed here - for each line, analyse the spaces between the letters. If there is enough variation (maximum is bigger than 2 times the mean), multiple words exist and spacing must be detected. A reduced maximum (*0.95) is used as threshold (to take into account off-by-1 pixel-based errors on word spacing columns). Distributions of spaces with very little variance points out that this is due to letter spacings between a word - just a single word is present in that case. Each line must be processed separately - in a line with bigger font (e.g. title), distribution of spaces will be different from other (regular) lines. 
- ![Alt text](readme_pipeline6.png "Pipeline")
+ ![Alt text](readme/readme_pipeline6.png "Pipeline")
 
 ## Training data gathering process
 A selection of system-available fonts was chosen - half of them machine fonts, other half 'handwritten-like'.  
@@ -65,13 +65,13 @@ fonts = handwritten_fonts + typed_fonts
 
 After that, for each font and for each character class (33 selected fonts, 26 character classes for english), the letter was drawn on an offscreen canvas using the specified font and saved to disk to form the initial dataset.
 This is how the data for class (character) "A" looks like:
- ![Alt text](readme_data1.png "Sample of class A")
+ ![Alt text](readme/readme_data1.png "Sample of class A")
 
 A random sample of the data generated for the neural network is demonstrated below. Take a note of the very different styles of letters present in the system-available fonts:
- ![Alt text](readme_data2.png "Random data sample")
+ ![Alt text](readme/readme_data2.png "Random data sample")
 
 ## Convolutional Neural Network
- ![Alt text](readme_nn1.png "Conv NN")
+ ![Alt text](readme/readme_nn1.png "Conv NN")
 
 A very small convolutional neural network was used - a total of 8 layers - 3 convolutional, 2 max pooling, 1 flatten and 2 dense layers.
 The network is purposefuly chosen to be small. Character bounding boxes were expected to be small and the distinction of letters is a relatively simple visual task. Not a lot of capacity was required from the network. 
@@ -87,10 +87,10 @@ For each image in the dataset, additional 18 versions were added (6 rotations x 
 The resulting dataset consisted of 15444 images.
 
 Random sample of the augmented data:
- ![Alt text](readme_augmented1.png "Conv NN")
+ ![Alt text](readme/readme_augmented1.png "Conv NN")
 
 ## Results and limitations
- ![Alt text](readme_curves.png "Train/validation curves")
+ ![Alt text](readme/readme_curves.png "Train/validation curves")
 
 The test set consisted of 16 images of paper sheets with text - total of 162 characters.  
 Most of them were written with pen, a few of them - with marker.  
